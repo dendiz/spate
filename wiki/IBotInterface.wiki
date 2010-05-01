@@ -7,42 +7,27 @@ All bots that are to be included in the simulation must implement the IBot inter
 
 Here are the descriptions of the methods:
 
-{{{
-public int get_seat();
-}}}
+*public int get_seat();*
 Return the seat number that this bot has been assigned to.
 
-{{{
-public void new_hand();
-}}}
+*public void new_hand();*
 This method is called when a new hand is beginning.
 
-{{{
-public String get_name();
-}}}
+*public String get_name();*
 This method returns the name of the bot.
 
-{{{
-public void game_start();
-}}}
+*public void game_start();*
 This method is called by the simulation engine at the start of the simulation.
 
-{{{
-public void hole_cards(String c1, String c2);
-}}}
-This method is called by the simulation engine during the preflop stage when the hole cards are dealt. The cards are represented as "<rank><suit>" where rank is one of [2,3,4,5,6,7,8,9,T,J,Q,K,A] and suit is one of [c,d,s,h]
+*public void hole_cards(String c1, String c2);*
+This method is called by the simulation engine during the preflop stage when the hole cards are dealt. The cards are represented as "ranksuit" where rank is one of [2,3,4,5,6,7,8,9,T,J,Q,K,A] and suit is one of [c,d,s,h]. For example "2c" would represent the card the two of clubs and "Kd" would be the king of diamonds.
 
-{{{
-public String[] get_cards();
-}}}
+*public String[] get_cards();*
 This method returns the hole cards of the bot.
 
-{{{
-public Action get_action();
-}}}
+
+*public Action get_action();*
 This method returns the action for the bot.
 
-{{{
-public void player_action(Action ac);
-}}}
+*public void player_action(Action ac);*
 This method is called by the simulation engine to inform the bot of the action of another bot.
