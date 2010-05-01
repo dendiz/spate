@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="package" name="spades-eval">
+	<path id="classpath">
+		<fileset id="libs" dir="lib" ></fileset>
+	</path>
+	
+	<path id="classpathtest">
+		<pathelement location="bin"/>
+		<fileset id="libs" dir="lib" >
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+
+	<target name="init">
+		<mkdir dir="bin/" />
+	</target>
+
+	<target name="compile" depends="init" description="compile the source">
+		<javac srcdir="src" debug="false" destdir="bin/" classpathref="classpath" />
+	</target>
+
+	<target name="package" depends="compile" description="create a jar file">
+		<mkdir dir="dist" />
+		<jar destfile="dist/${ant.project.name}.jar" basedir="bin/" />
+	</target>
+
+	<target name="compiletests" depends="init, compile" description="compile the unit tests">
+		<mkdir dir="testbin" />
+		<javac srcdir="tests" debug="false" destdir="testbin" classpathref="classpathtest" />
+	</target>
+
+	<target name="test" depends="compiletests">
+		<java fork="yes" classname="spadeseval.evaluator.TestRunner" 
+			taskname="junit" failonerror="true" classpathref="classpathtest">
+			<arg value="spadeseval.evaluator.TestRunner" />
+		</java>
+	</target>
+
+</project>
