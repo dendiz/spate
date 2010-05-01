@@ -30,3 +30,23 @@ bots.CallBot : 2884.6833
 bots.CallBot : 7011.2573
 Duration (ms):2951
 }}}
+
+{{{
+Botpit v2j
+Sim rounds: 100000 , num players: 10, trace: on, log: off
+..........
+Stacks:
+bots.CallBot : 6957.581
+bots.CallBot : 3970.925
+bots.CallBot : 4522.655
+bots.CallBot : 3167.6392
+bots.CallBot : 5867.6177
+bots.CallBot : 5127.6587
+bots.CallBot : 9380.957
+bots.CallBot : 3764.2566
+bots.CallBot : 5074.26
+bots.CallBot : 2165.9543
+Duration (ms):127485
+}}}
+
+Circa 3 seconds for 100K hands of 10 players, and 120 seconds with the same configuration but trace logging enabled.
