@@ -7,3 +7,26 @@ The number of bots included in the game effect performance (due to more hand ran
 
 = Details =
 In all simulations the application logging is disabled. Trace logging is enabled when indicated. Even though Spate uses an array buffer to hold 30K entries and dumps them in batch using a buffered output writer, the impact is still high on performance.
+
+||Date||01.05.2010||
+||CPU||4xAmd xp 2600||
+||RAM||8gb||
+||Jvm||Java 1.6.0.15||
+
+{{{
+Botpit v2j
+Sim rounds: 100000 , num players: 10, trace: off, log:off
+..........
+Stacks:
+bots.CallBot : 6632.923
+bots.CallBot : 4612.9272
+bots.CallBot : 8307.968
+bots.CallBot : 5647.917
+bots.CallBot : 3569.6885
+bots.CallBot : 3299.679
+bots.CallBot : 4046.2507
+bots.CallBot : 3986.2637
+bots.CallBot : 2884.6833
+bots.CallBot : 7011.2573
+Duration (ms):2951
+}}}
