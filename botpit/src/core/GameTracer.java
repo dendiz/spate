@@ -23,6 +23,7 @@ public class GameTracer {
 	String log_name;
 	PrintStream log;
 	boolean trace_enabled = true;
+	StringBuffer sb = new StringBuffer();
 
 	public GameTracer(int buffer_size, String log_name) {
 		trace_buffer = new String[buffer_size];
@@ -38,10 +39,14 @@ public class GameTracer {
 	
 	public void append(String line) {
 		if (!trace_enabled) return;
-		trace_buffer[current_idx++] = String.format("%08d. %s", total_idx++, line);
+		sb.append(line);
+		trace_buffer[current_idx] = sb.toString();
+		sb.setLength(0);
 		if (current_idx == trace_buffer.length - 1) {
 			dump();
 			current_idx = 0; //clear the buffer. 
+		} else {
+			current_idx++;
 		}
 	}
 	
