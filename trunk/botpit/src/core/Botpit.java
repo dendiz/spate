@@ -36,7 +36,8 @@ public class Botpit {
 	public String[] board = new String[5];
 	Deck deck;
 	Properties config = new Properties();
-	GameTracer tracer = new GameTracer(30000, trace_log_name);
+	GameTracer tracer = new GameTracer(10000, trace_log_name);
+	StringBuffer sb = new StringBuffer();
 	public Botpit() {
 		deck = new Deck();
 	}
@@ -67,7 +68,7 @@ public class Botpit {
 			if (pre_flop() || flop() || turn() || river() || showdown()) {
 				if (game_stage != SHOWDOWN) steal_pot();
 			}
-			if (TRACE) tracer.append(String.format("[endhand] id: %d", i));
+			if (TRACE) tracer.append("[endhand] id: " + i);
 		}
 		tracer.finish();
 		System.out.println("\nStacks:");
@@ -83,10 +84,10 @@ public class Botpit {
 			if (actions[i].type != Action.FOLD) {
 				stacks[i] += pot;
 				if (LOG) Log.info(players[i].get_name() + " stole the pot");
-				if (TRACE) tracer.append(String.format("[winner] seat: %d amount: %f", i, pot));
+				if (TRACE) tracer.append("[winner] seat: "+i+" amount: %f"+ pot);
 				if (TRACE) {
 					for (int j=0;j<players.length;j++) {
-						tracer.append(String.format("[endstack] seat: %d stack: %f", j, stacks[j]));
+						tracer.append("[endstack] seat: "+j+" stack: "+stacks[j]);
 					}			
 				}
 				return;
@@ -100,32 +101,33 @@ public class Botpit {
 		if (TRACE) tracer.append("[stage] preflop");
 		game_stage = PREFLOP;
 		actions[get_sb_seat()] = Action.smallblind(SMALLBLINDSIZE);
-		if (TRACE) tracer.append(String.format("[action] seat: %d type: post_smallblind", get_sb_seat()));
+		if (TRACE) tracer.append("[action] seat: "+get_sb_seat()+"type: post_smallblind");
 		
 		actions[get_bb_seat()] = Action.bigblind(BIGBLINDSIZE);
-		if (TRACE) tracer.append(String.format("[action] seat: %d type: post_bigblind", get_bb_seat()));
+		if (TRACE) tracer.append("[action] seat: "+get_bb_seat()+" type: post_bigblind");
 
 		stacks[get_sb_seat()] -= SMALLBLINDSIZE;
-		if (TRACE) tracer.append(String.format("[stack] seat: %d amount: %f", get_sb_seat(), stacks[get_sb_seat()]));
+		if (TRACE) tracer.append("[stack] seat: "+get_sb_seat()+"amount: "+stacks[get_sb_seat()]);
 		
 		stacks[get_bb_seat()] -= BIGBLINDSIZE;
-		if (TRACE) tracer.append(String.format("[stack] seat: %d amount: %f", get_bb_seat(), stacks[get_bb_seat()]));
+		if (TRACE) tracer.append("[stack] seat: "+get_bb_seat()+"amount: "+stacks[get_bb_seat()]);
+
 		
 		bets[get_sb_seat()] += SMALLBLINDSIZE;
-		if (TRACE) tracer.append(String.format("[bet] seat: %d amount: %f", get_sb_seat(), bets[get_sb_seat()]));
+		if (TRACE) tracer.append("[bet] seat: "+get_sb_seat()+" amount: "+bets[get_sb_seat()]);
 		
 		bets[get_bb_seat()] += BIGBLINDSIZE;
-		if (TRACE) tracer.append(String.format("[bet] seat: %d amount: %f", get_bb_seat(), bets[get_bb_seat()]));
+		if (TRACE) tracer.append("[bet] seat: "+get_bb_seat()+" amount: "+bets[get_bb_seat()]);
 		
 		pot += SMALLBLINDSIZE + BIGBLINDSIZE;
-		if (TRACE) tracer.append(String.format("[pot] amount: %f", pot));
+		if (TRACE) tracer.append("[pot] amount: "+pot);
 		
 		for (IBot p : players) {
 			String c1 = deck.deal();
 			String c2 = deck.deal();
 			if (LOG) Log.debug(p.get_name()+ " hole cards:" + c1 + " " + c2);
 			p.hole_cards(c1,c2);
-			if (TRACE) tracer.append(String.format("[holecard] seat: %d c1: %s c2: %s", p.get_seat(), c1, c2));
+			if (TRACE) tracer.append(String.format("[holecard] seat: "+p.get_seat()+" c1: "+c1+" c2: "+ c2));
 		}
 		
 		playout_hand();
@@ -143,7 +145,12 @@ public class Botpit {
 		game_stage = FLOP;
 		raises = 0;
 		for (int i=0;i<3;i++) board[i] = deck.deal();
-		if (TRACE) tracer.append(String.format("[board] %s %s %s %s %s",board[0],board[1],board[2],"__","__"));
+		sb.append(board[0]);
+		sb.append(" ");
+		sb.append(board[1]);
+		sb.append(" ");
+		sb.append(board[2]);
+		if (TRACE) tracer.append("[board] "+sb.toString()+" __ __");
 		log_board();
 		playout_hand();
 		return is_noshowdown();
@@ -154,7 +161,10 @@ public class Botpit {
 		game_stage = RIVER;
 		raises = 0;
 		board[4] = deck.deal();
-		if (TRACE) tracer.append(String.format("[board] %s %s %s %s %s",board[0],board[1],board[2],board[3],board[4]));
+		sb.append(" ");
+		sb.append(board[4]);
+		if (TRACE) tracer.append("[board] "+sb.toString());
+		sb.setLength(0);
 		log_board();
 		playout_hand();
 		return is_noshowdown();
@@ -166,7 +176,9 @@ public class Botpit {
 		game_stage = TURN;
 		raises = 0;
 		board[3] = deck.deal();
-		if (TRACE) tracer.append(String.format("[board] %s %s %s %s %s",board[0],board[1],board[2],board[3],"__"));
+		sb.append(" ");
+		sb.append(board[3]);
+		if (TRACE) tracer.append("[board] "+sb.toString()+" __");
 		log_board();
 		playout_hand();
 		return is_noshowdown();
@@ -184,11 +196,11 @@ public class Botpit {
 		for (int i:winners) {
 			stacks[i] += (pot/winners.length);
 			if (LOG) Log.info(players[i].get_name() + " won pot of " + (pot/winners.length));
-			if (TRACE) tracer.append(String.format("[winner] seat: %d amount: %f", i, pot/winners.length));
+			if (TRACE) tracer.append("[winner] seat: "+i+" amount: "+(pot/winners.length));
 		}
 		if (TRACE) {
 			for (int i=0;i<players.length;i++) {
-				tracer.append(String.format("[endstack] seat: %d stack: %f", i, stacks[i]));
+				tracer.append(String.format("[endstack] seat: "+i+" stack: "+stacks[i]));
 			}			
 		}
 		
@@ -210,7 +222,7 @@ public class Botpit {
 		while(!is_betting_over()) {
 			if (actions[current_player].type == Action.FOLD) {
 				if (LOG) Log.info(players[current_player].get_name() + " had folded, skipping");
-				if (TRACE) tracer.append(String.format("[action] seat: %d type: alreadyfold", current_player));
+				if (TRACE) tracer.append("[action] seat: "+current_player+" type: alreadyfold");
 				inc_player();
 				continue;
 			}
@@ -262,10 +274,10 @@ public class Botpit {
 			stacks[current_player] -= ac.tocall;
 		}
 		if (TRACE) {
-			tracer.append(String.format("[action] seat: %d type: %s", current_player, Action.get_string(ac.type)));
-			tracer.append(String.format("[stack] seat: %d amount: %f", current_player, stacks[current_player]));
-			tracer.append(String.format("[bet] seat: %d amount: %f", current_player, bets[current_player]));
-			tracer.append(String.format("[pot] amount: %f", pot));
+			tracer.append("[action] seat: "+current_player+" type: "+ Action.get_string(ac.type));
+			tracer.append("[stack] seat: "+ current_player+" amount: "+ stacks[current_player]);
+			tracer.append("[bet] seat: "+ current_player+" amount: "+ bets[current_player]);
+			tracer.append("[pot] amount: "+ pot);
 		}
 	}
 
@@ -334,8 +346,8 @@ public class Botpit {
 
 	private void new_hand(int i) {
 		if (LOG) Log.info(" *** new Hand "+ i + " ****");
-		if (TRACE) tracer.append(String.format("[hand] id: %d", i));
-		if (TRACE) tracer.append(String.format("[players] total: %d", NUMPLAYERS));
+		if (TRACE) tracer.append("[hand] id: "+ i);
+		if (TRACE) tracer.append("[players] total: "+ NUMPLAYERS);
 		pot = 0;
 		for (int j=0;j<board.length;j++) board[j] = null;
 		raises = 0;
