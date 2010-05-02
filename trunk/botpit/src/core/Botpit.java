@@ -396,7 +396,9 @@ public class Botpit {
 	}
 	
 	public float get_min_raise(int seat) {
-		return raises < MAXRAISES ? BIGBLINDSIZE : 0;
+		if (game_stage <= FLOP) return raises < MAXRAISES ? BIGBLINDSIZE : 0;
+		return raises < MAXRAISES ? 2 * BIGBLINDSIZE : 0;
+		
 	}
 	
 	public static void main(String[] args) {
