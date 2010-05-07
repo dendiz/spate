@@ -16,6 +16,7 @@ public class Botpit {
 	private static float SMALLBLINDSIZE = 1;
 	public static boolean LOG = false;
 	private static boolean graph = false;
+	public int current_hand = -1;
 	static int NUMSIMROUNDS = 100000;
 	static int NUMPLAYERS = 10;
 	static String trace_log_name = "trace.log";
@@ -26,6 +27,7 @@ public class Botpit {
 	static int TURN = 2;
 	public static int RIVER = 3;
 	static int SHOWDOWN = 4;
+	public static long game_start_time;
 	public float pot = 0;
 	public int raises = 0;
 	public int game_stage;
@@ -63,14 +65,14 @@ public class Botpit {
 	public void run() {
 		read_config();
 		load_players();
-		if (graph) new Graph().game_started();
-		for (int i=0;i<NUMSIMROUNDS;i++) {
-			if (i % ((int) (NUMSIMROUNDS / 10)) == 0) System.out.print(".");
-			new_hand(i);
+		if (graph) new Graph(this).game_started();
+		for (current_hand=0;current_hand<NUMSIMROUNDS;current_hand++) {
+			if (current_hand % ((int) (NUMSIMROUNDS / 10)) == 0) System.out.print(".");
+			new_hand(current_hand);
 			if (pre_flop() || flop() || turn() || river() || showdown()) {
 				if (game_stage != SHOWDOWN) steal_pot();
 			}
-			if (TRACE) tracer.append("[endhand] id: " + i);
+			if (TRACE) tracer.append("[endhand] id: " + current_hand);
 		}
 		tracer.finish();
 		System.out.println("\nStacks:");
@@ -417,11 +419,15 @@ public class Botpit {
 	
 	public static void main(String[] args) {
 		System.out.println("Botpit v2j");
-		long t1 = System.currentTimeMillis();
-		if (args[1].equals("-g")) graph = true;
+		System.out.println("Command args:");
+		for (String s:args) {
+			System.out.println("args" + s);
+		}
+		if (args[0].equals("-g")) graph = true;
+		game_start_time = System.currentTimeMillis();
 		Botpit bp = new Botpit();
 		bp.run();
-		System.out.println("Duration (ms):" + (System.currentTimeMillis() - t1));
+		System.out.println("Duration (ms):" + (System.currentTimeMillis() - game_start_time));
 	}
 
 	public int get_num_active() {

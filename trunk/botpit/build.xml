@@ -18,7 +18,8 @@
 
 	<target name="run" depends="compile" description="run the simulation engine">
 		<java fork="yes" classname="core.Botpit" 
-			taskname="junit" failonerror="true" classpathref="classpath">
+			taskname="botpit" failonerror="true" classpathref="classpath">
+			<arg line="-g" />
 		</java>		
 	</target>
 	<target name="package" depends="compile" description="create a jar file">
