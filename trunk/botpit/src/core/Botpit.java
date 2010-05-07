@@ -15,6 +15,7 @@ public class Botpit {
 	private static int MAXRAISES = 4;
 	private static float SMALLBLINDSIZE = 1;
 	public static boolean LOG = false;
+	private static boolean graph = false;
 	static int NUMSIMROUNDS = 100000;
 	static int NUMPLAYERS = 10;
 	static String trace_log_name = "trace.log";
@@ -36,7 +37,7 @@ public class Botpit {
 	public String[] board = new String[5];
 	Deck deck;
 	Properties config = new Properties();
-	GameTracer tracer = new GameTracer(10000, trace_log_name);
+	GameTracer tracer = new GameTracer(100000, trace_log_name);
 	StringBuffer sb = new StringBuffer();
 	public Botpit() {
 		deck = new Deck();
@@ -62,6 +63,7 @@ public class Botpit {
 	public void run() {
 		read_config();
 		load_players();
+		if (graph) new Graph().game_started();
 		for (int i=0;i<NUMSIMROUNDS;i++) {
 			if (i % ((int) (NUMSIMROUNDS / 10)) == 0) System.out.print(".");
 			new_hand(i);
@@ -416,6 +418,7 @@ public class Botpit {
 	public static void main(String[] args) {
 		System.out.println("Botpit v2j");
 		long t1 = System.currentTimeMillis();
+		if (args[1].equals("-g")) graph = true;
 		Botpit bp = new Botpit();
 		bp.run();
 		System.out.println("Duration (ms):" + (System.currentTimeMillis() - t1));
