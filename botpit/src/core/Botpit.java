@@ -412,7 +412,7 @@ public class Botpit {
 	}
 	
 	public float get_min_raise(int seat) {
-		if (game_stage <= FLOP) return raises < MAXRAISES ? BIGBLINDSIZE : 0;
+		if (game_stage <= FLOP) return raises < MAXRAISES-1 ? BIGBLINDSIZE : 0;
 		return raises < MAXRAISES ? 2 * BIGBLINDSIZE : 0;
 		
 	}
@@ -421,13 +421,17 @@ public class Botpit {
 		System.out.println("Botpit v2j");
 		System.out.println("Command args:");
 		for (String s:args) {
-			System.out.println("args" + s);
+			System.out.println(s);
 		}
-		if (args[0].equals("-g")) graph = true;
+		if (args.length > 0 && args[0].equals("-g")) graph = true;
 		game_start_time = System.currentTimeMillis();
 		Botpit bp = new Botpit();
 		bp.run();
-		System.out.println("Duration (ms):" + (System.currentTimeMillis() - game_start_time));
+		long duration =  (System.currentTimeMillis() - game_start_time);
+		System.out.println("Duration (ms):" + duration);
+		System.out.println("Hands / sec: " + (NUMSIMROUNDS/(duration/1000f)));
+		System.out.println("Mem:" + (Runtime.getRuntime().totalMemory() / 1048576) + " Mb");
+
 	}
 
 	public int get_num_active() {
