@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,11 +27,13 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 public class Graph {
+	private int time_slot = 0;
 	private JFrame frame;
 	private JProgressBar progress_bar;
 	private Timer timer;
 	private Botpit gi;
 	private ChartPanel chartPanel = new ChartPanel(null);
+	private ArrayList<ArrayList<HashMap<String, Double>>> bankrollHistory = new ArrayList<ArrayList<HashMap<String, Double>>>();
 //	private Map<Integer, List<Map<String, Double>>> stats = new HashMap<Integer, List<Map<String, Double>>>();
 	StringBuffer sb = new StringBuffer();
 	public Graph(Botpit gi) {
@@ -38,6 +41,7 @@ public class Graph {
 	}
 	public void game_started() {
 		create_frame();
+		calculate_chart(0);
 		update_graph();
 		frame.setVisible(true);
 	}
@@ -69,10 +73,10 @@ public class Graph {
 		return chart;
 	}
 
-	private JFreeChart createJFreeChart(
+	private synchronized JFreeChart createJFreeChart(
 			Map<String, Double> playerToBankRoll,
 			XYSeriesCollection xySeriesCollection, int snapshot) {
-		final JFreeChart chart = ChartFactory.createXYLineChart("Live Stack Graph", "Games", "Stack",
+		final JFreeChart chart = ChartFactory.createXYLineChart("Live Stack Graph", "Time", "Stack",
 				xySeriesCollection, PlotOrientation.VERTICAL, true, false, false);
 		
 		for (int i=0;i<Botpit.NUMPLAYERS;i++) {
@@ -81,8 +85,8 @@ public class Graph {
 			DecimalFormat moneyFormat = new DecimalFormat("0.00");
 			String resultString = playerName + ": $" + moneyFormat.format(finalBankroll) + " ($"
 					+ moneyFormat.format(finalBankroll / (snapshot / 100D)) + "/100)";
-			final XYPointerAnnotation pointer = new XYPointerAnnotation(resultString, Math.min(snapshot, Botpit.NUMSIMROUNDS), finalBankroll,
-					Math.PI * 5.9 / 6);
+			final XYPointerAnnotation pointer = new XYPointerAnnotation(resultString,
+					time_slot, finalBankroll, Math.PI * 5.9 / 6);
 			pointer.setBaseRadius(130.0);
 			pointer.setTipRadius(1.0);
 			pointer.setLabelOffset(10.0);
@@ -94,24 +98,28 @@ public class Graph {
 		return chart;
 	}
 
-	private void calculateBankrolls(
+	private synchronized void calculateBankrolls(
 			Map<String, Double> playerToBankRoll,
 			Map<String, XYSeries> playerToXYSeries, int snapshot) {
-		for (int game = 0; game < Math.min(Botpit.NUMSIMROUNDS, snapshot); game++) {
+		for (int game = 0; game < Math.min(bankrollHistory.size(), snapshot); game++) {
 			for (int i=0;i<Botpit.NUMPLAYERS;i++) {
-				double playerBankRoll = gi.stacks[i];
-				playerToBankRoll.put("seat "+i, playerBankRoll);
-				playerToXYSeries.get("seat "+i).add(game+1, playerBankRoll);
+				HashMap<String, Double> playerBankRoll = bankrollHistory.get(game).get(i);// playerToBankRoll.get("seat "+i);
+				playerToBankRoll.put("seat "+i, (Double)playerBankRoll.get("seat " +i));
+				playerToXYSeries.get("seat "+i).add(game+1, playerBankRoll.get("seat "+i));
 			}
 		}
 	}
 	
-	private void update_graph() {
+	private synchronized void update_graph() {
 		timer = new Timer(1000, new ActionListener() {
+			
+
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				time_slot++;
 				int snapshot = gi.current_hand;
 				if (snapshot == Botpit.NUMSIMROUNDS) timer.stop();
+				add_bankroll_history();
 				long now = System.currentTimeMillis();
 				long past_time = now - Botpit.game_start_time;
 				float gamespeed_avg = snapshot > 0 ? (snapshot / (past_time/1000)) : 0;
@@ -130,7 +138,19 @@ public class Graph {
 				final JFreeChart chart = calculate_chart(snapshot);
 				chartPanel.setChart(chart);
 			}
+
+
 		});
 		timer.start();
+	}
+	private void add_bankroll_history() {
+		ArrayList<HashMap<String, Double>> handhistory = null;
+		handhistory = new ArrayList<HashMap<String, Double>>();
+		for (int i = 0; i < Botpit.NUMPLAYERS;i++) {
+			HashMap<String, Double> br = new HashMap<String, Double>();
+			br.put("seat "+i, Double.valueOf(gi.stacks[i]));
+			handhistory.add(br);
+		}
+		bankrollHistory.add(handhistory);
 	}
 }
