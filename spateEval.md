@@ -1,0 +1,5 @@
+# Introduction #
+The spate hand evaluation library is required by the simulation engine to rank hands which is required obviously to determine the winner(s) and the end of each round.
+
+# Details #
+Spate uses an enormous hand lookup table that stores all possible permutations of 7 card poker hands. The table is a ADG (Acyclic Directed Graph) that is traversed during each lookup to determine the rank of a hand. This table will be generated the first time the evaluator is used, the table is saved to disk in a file called "handRanks.dat" and on the following runs the table is read from the file into memory. This means that applications using spate eval will at least occupy 219MB of RAM. That was the down side. Now for the upside: Tremendous speed for evaluating hands. Typically hand evaluation is in constant time. Since the spate project is about speed, this was the only way to go.
